@@ -1,29 +1,21 @@
-FROM php:7.2-apache
-#FROM php:8.0-apache
-MAINTAINER lab.infoworks.com
+FROM php:7.2 as php
+#FROM php:8.1 as php
 
-#Now deploy project src to /var/www/html
-ADD . /var/www/html
-#ADD config/apache.conf /etc/apache2/httpd.conf
-#COPY config/php.ini /usr/local/etc/php/
-#
-EXPOSE 80
+RUN apt-get update -y
+RUN apt-get install -y unzip libpq-dev libcurl4-gnutls-dev
+RUN docker-php-ext-install pdo pdo_mysql bcmath
 
-RUN apt-get update \
-    && apt-get install -y git curl libpng-dev libonig-dev libxml2-dev zip unzip
+RUN pecl install -o -f redis \
+    && rm -rf /tmp/pear \
+    && docker-php-ext-enable redis
 
-RUN apt-get update \
-    && curl -sS "https://getcomposer.org/installer" | php \
-    && chmod +x composer.phar \
-    && mv composer.phar /usr/local/bin/composer \
-    && composer install --no-scripts --no-autoloader
+WORKDIR /var/www
+COPY . .
 
-RUN apt-get update \
-    #&& apt-get install -y libmcrypt-dev \
-    #&& pecl install mcrypt-1.0.2 \
-    #&& docker-php-ext-enable mcrypt \
-    #&& docker-php-ext-install mysqli \
-    && docker-php-ext-install pdo_mysql \
-    && a2enmod headers \
-    && a2enmod rewrite \
-    && service apache2 restart
+COPY --from=composer:2.3.5 /usr/bin/composer /usr/bin/composer
+
+ENV PORT=8080
+
+RUN chmod a+x ./Docker/entrypoint.sh
+ENTRYPOINT [ "./Docker/entrypoint.sh" ]
+

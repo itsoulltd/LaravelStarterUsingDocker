@@ -1,0 +1,66 @@
+version: '3.7'
+
+networks:
+    web-app-net:
+        name: my-web-app-net
+        driver: bridge
+
+volumes:
+    mysql-data:
+
+services:
+    # web-app service
+    web-app:
+        image: web-app:1.0
+        build:
+            context: .
+            args:
+                - APP_ENV=${APP_ENV}
+        environment:
+            - APP_ENV=${APP_ENV}
+        ports:
+            - 8080:8080
+        depends_on:
+            - mysql-db
+            - redis
+        networks:
+            - web-app-net
+
+    # mysql-db services
+    mysql-db:
+        image: mysql:8.0
+        ports:
+            - 3306:3306
+        environment:
+            - MYSQL_DATABASE=${DB_DATABASE}
+            - MYSQL_ROOT_USER=${DB_USERNAME}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        volumes:
+            - mysql-data:/var/lib/mysql
+        networks:
+            - web-app-net
+
+    # PhpMyAdmin service
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        environment:
+            PMA_HOST: mysql-db
+            PMA_PORT: 3306
+        ports:
+            - 8081:80
+        depends_on:
+            - mysql-db
+        networks:
+            - web-app-net
+
+    # Redis service
+    redis:
+        image: redis:alpine
+        command: redis-server --appendonly yes --requirepass  "${REDIS_PASSWORD}"
+        ports:
+            - 6379:6379
+        networks:
+            - web-app-net
+
+###End Of File
