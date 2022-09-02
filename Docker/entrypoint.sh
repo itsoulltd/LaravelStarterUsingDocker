@@ -15,8 +15,7 @@ fi
 
 
 php artisan migrate:fresh
-php artisan db:seed --class=PermissionTableSeeder
-php artisan db:seed --class=UserSeeder
+#php artisan db:seed --class=UserSeeder
 php artisan key:generate
 ## Required For Jwt-Auth-Service:
 #php artisan jwt:secret
@@ -24,6 +23,7 @@ php artisan key:generate
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
+php artisan optimize
 
 php artisan serve --port=$PORT --host=0.0.0.0 --env=.env
 exec docker-php-entrypoint "$@"
