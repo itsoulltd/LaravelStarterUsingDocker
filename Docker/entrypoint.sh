@@ -1,25 +1,17 @@
 #!/bin/bash
 
-#if [ ! -f "vendor/autoload.php" ]; then
-#    composer install --no-progress --no-interaction --ignore-platform-reqs
-#fi
-
 composer install --no-progress --no-interaction --ignore-platform-reqs
 
-if [ ! -f ".env" ]; then
-    echo "Creating env file for env $APP_ENV"
-    cp .env.example .env
-else
-    echo "env file exists."
-fi
-
+echo "Creating env file for env $APP_ENV"
+cp .env.example .env
 
 php artisan migrate:fresh
 #php artisan db:seed --class=UserSeeder
+
 php artisan key:generate
-## Required For Jwt-Auth-Service:
+##For Jwt-Auth-Service:
 #php artisan jwt:secret
-#
+
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
